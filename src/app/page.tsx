@@ -19,9 +19,9 @@ const TOKEN_STORAGE_KEY = "contributor_token";
 
 const sourceOptions: Array<{ value: SourceType; label: string; note: string }> = [
   { value: "timetable", label: "タイテ", note: "出演時間やステージ表" },
-  { value: "flyer", label: "フライヤー", note: "告知画像やイベント概要" },
-  { value: "meet_and_greet", label: "特典会", note: "物販・特典会の案内" },
-  { value: "x_screenshot", label: "Xのスクショ", note: "ポスト本文や添付画像" }
+  { value: "flyer", label: "告知画像", note: "イベント概要や出演者一覧" },
+  { value: "meet_and_greet", label: "特典会タイテ", note: "特典会や並行物販の時間表" },
+  { value: "x_screenshot", label: "X投稿のスクショ", note: "Xの投稿画面を撮影した画像" },
 ];
 
 function resolveApiBaseUrl() {
