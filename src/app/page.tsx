@@ -1,9 +1,9 @@
 "use client";
 
-import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react";
 import { CheckCircle2, ImagePlus, Loader2, Pencil, Send, Trash2, UploadCloud } from "lucide-react";
 
-type SourceType = "timetable" | "flyer" | "meet_and_greet";
+type SourceType = "timetable" | "flyer" | "meet_and_greet" | "x_screenshot";
 type UploadStep = "editing" | "done";
 
 type UploadResponse = {
@@ -18,9 +18,10 @@ const CONTRIBUTOR_STORAGE_KEY = "contributor_name";
 const TOKEN_STORAGE_KEY = "contributor_token";
 
 const sourceOptions: Array<{ value: SourceType; label: string; note: string }> = [
-  { value: "timetable", label: "タイムテーブル", note: "出演時間やステージ表" },
+  { value: "timetable", label: "タイテ", note: "出演時間やステージ表" },
   { value: "flyer", label: "フライヤー", note: "告知画像やイベント概要" },
-  { value: "meet_and_greet", label: "特典会", note: "物販・特典会の案内" }
+  { value: "meet_and_greet", label: "特典会", note: "物販・特典会の案内" },
+  { value: "x_screenshot", label: "Xのスクショ", note: "ポスト本文や添付画像" }
 ];
 
 function resolveApiBaseUrl() {
@@ -32,23 +33,10 @@ function resolveApiBaseUrl() {
   return "http://localhost:8000";
 }
 
-function mergeFiles(current: File[], selected: File[]) {
-  const seen = new Set(current.map((file) => `${file.name}:${file.size}:${file.lastModified}`));
-  const next = [...current];
-  selected.forEach((file) => {
-    const key = `${file.name}:${file.size}:${file.lastModified}`;
-    if (!seen.has(key)) {
-      seen.add(key);
-      next.push(file);
-    }
-  });
-  return next;
-}
-
 export default function LabelUploadPage() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [sourceType, setSourceType] = useState<SourceType>("timetable");
-  const [files, setFiles] = useState<File[]>([]);
+  const [file, setFile] = useState<File | null>(null);
   const [contributorName, setContributorName] = useState("");
   const [draftName, setDraftName] = useState("");
   const [isEditingName, setIsEditingName] = useState(false);
@@ -69,8 +57,7 @@ export default function LabelUploadPage() {
     setIsEditingName(!storedName);
   }, []);
 
-  const previewFiles = useMemo(() => files.slice(0, 4), [files]);
-  const canUpload = contributorName.trim().length > 0 && files.length > 0 && !isUploading;
+  const canUpload = contributorName.trim().length > 0 && file !== null && !isUploading;
 
   function saveContributorName() {
     const nextName = draftName.trim();
@@ -86,8 +73,8 @@ export default function LabelUploadPage() {
   }
 
   function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
-    const selected = Array.from(event.target.files ?? []).filter((file) => file.type.startsWith("image/"));
-    setFiles((current) => mergeFiles(current, selected));
+    const selected = Array.from(event.target.files ?? []).find((nextFile) => nextFile.type.startsWith("image/"));
+    setFile(selected ?? null);
     setError(null);
     event.target.value = "";
   }
@@ -107,7 +94,9 @@ export default function LabelUploadPage() {
       if (token) {
         formData.set("contributor_token", token);
       }
-      files.forEach((file) => formData.append("images", file));
+      if (file) {
+        formData.append("images", file);
+      }
 
       const response = await fetch(`${resolveApiBaseUrl()}/public/training-dataset/upload`, {
         method: "POST",
@@ -126,8 +115,8 @@ export default function LabelUploadPage() {
       }
 
       const body = (await response.json()) as UploadResponse;
-      setAcceptedCount(body.accepted_files || files.length);
-      setFiles([]);
+      setAcceptedCount(body.accepted_files || 1);
+      setFile(null);
       setStep("done");
     } catch (uploadError) {
       setError(uploadError instanceof Error ? uploadError.message : "アップロードに失敗しました。");
@@ -147,8 +136,8 @@ export default function LabelUploadPage() {
       <section className="hero-band">
         <div className="hero-inner">
           <p className="eyebrow">Event Candidate Labeling</p>
-          <h1>タイテ画像収集</h1>
-          <p className="lead">画像を選んでアップロードするだけで完了です。</p>
+          <h1>画像アップロード</h1>
+          <p className="lead">タイテ、フライヤー、特典会、Xのスクショを1枚ずつ送れます。</p>
         </div>
       </section>
 
@@ -226,8 +215,8 @@ export default function LabelUploadPage() {
           <section className="form-section">
             <div className="section-title-row">
               <h2>画像追加</h2>
-              {files.length > 0 && (
-                <button className="icon-button" type="button" onClick={() => setFiles([])} aria-label="選択をクリア">
+              {file && (
+                <button className="icon-button" type="button" onClick={() => setFile(null)} aria-label="選択をクリア">
                   <Trash2 aria-hidden="true" />
                 </button>
               )}
@@ -237,7 +226,6 @@ export default function LabelUploadPage() {
               ref={fileInputRef}
               className="file-input"
               type="file"
-              multiple
               accept="image/*"
               onChange={handleFileChange}
             />
@@ -249,18 +237,15 @@ export default function LabelUploadPage() {
 
             <div className="selected-summary">
               <span>選択済み</span>
-              <strong>{files.length}枚</strong>
+              <strong>{file ? "1枚" : "なし"}</strong>
             </div>
 
-            {previewFiles.length > 0 && (
+            {file && (
               <div className="file-list" aria-label="選択中の画像">
-                {previewFiles.map((file) => (
-                  <div className="file-row" key={`${file.name}:${file.size}:${file.lastModified}`}>
-                    <span>{file.name}</span>
-                    <small>{Math.max(1, Math.round(file.size / 1024))}KB</small>
-                  </div>
-                ))}
-                {files.length > previewFiles.length && <p className="more-count">ほか {files.length - previewFiles.length}枚</p>}
+                <div className="file-row">
+                  <span>{file.name}</span>
+                  <small>{Math.max(1, Math.round(file.size / 1024))}KB</small>
+                </div>
               </div>
             )}
           </section>
@@ -276,4 +261,3 @@ export default function LabelUploadPage() {
     </main>
   );
 }
-
