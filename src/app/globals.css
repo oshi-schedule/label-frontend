@@ -1,0 +1,390 @@
+:root {
+  --background: #f7f8fb;
+  --foreground: #18212f;
+  --muted: #667085;
+  --panel: #ffffff;
+  --line: #d9dee8;
+  --primary: #e94f37;
+  --teal: #0f766e;
+  --sky: #2563eb;
+  --danger: #b42318;
+  --shadow: 0 18px 50px rgba(24, 33, 47, 0.14);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
+  background: var(--background);
+}
+
+body {
+  min-height: 100%;
+  margin: 0;
+  color: var(--foreground);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.app-shell {
+  min-height: 100vh;
+  padding: 0 16px 24px;
+}
+
+.hero-band {
+  margin: 0 -16px;
+  padding: 28px 16px 24px;
+  color: #ffffff;
+  background:
+    linear-gradient(145deg, rgba(24, 33, 47, 0.8), rgba(15, 118, 110, 0.62)),
+    url("https://images.unsplash.com/photo-1516280440614-37939bbacd81?auto=format&fit=crop&w=1200&q=80");
+  background-position: center;
+  background-size: cover;
+}
+
+.hero-inner {
+  width: min(100%, 520px);
+  margin: 0 auto;
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 0.78rem;
+}
+
+h1,
+h2,
+p {
+  margin: 0;
+}
+
+h1 {
+  font-size: 2rem;
+  line-height: 1.1;
+  letter-spacing: 0;
+}
+
+.lead {
+  max-width: 18rem;
+  margin-top: 10px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.98rem;
+  line-height: 1.55;
+}
+
+.upload-panel,
+.done-panel {
+  width: min(100%, 520px);
+  margin: -10px auto 0;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+
+.done-panel {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  padding: 36px 20px;
+  text-align: center;
+}
+
+.done-icon {
+  width: 48px;
+  height: 48px;
+  color: var(--teal);
+}
+
+.done-panel h2 {
+  font-size: 1.35rem;
+}
+
+.thanks {
+  color: var(--muted);
+}
+
+.form-section {
+  padding: 18px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.form-section:first-child {
+  padding-top: 0;
+}
+
+.form-section h2 {
+  font-size: 1rem;
+}
+
+.section-title-row {
+  display: flex;
+  min-height: 36px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.contributor-section {
+  display: grid;
+  gap: 10px;
+}
+
+.contributor-name {
+  width: fit-content;
+  max-width: 100%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  color: #ffffff;
+  background: var(--teal);
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.name-editor {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+}
+
+.name-editor input {
+  min-width: 0;
+  height: 46px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--foreground);
+}
+
+.name-editor input:focus {
+  border-color: var(--teal);
+  outline: 2px solid rgba(15, 118, 110, 0.18);
+}
+
+.save-button,
+.icon-text-button,
+.icon-button,
+.file-picker,
+.primary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.save-button {
+  height: 46px;
+  padding: 0 14px;
+  color: #ffffff;
+  background: var(--sky);
+}
+
+.icon-text-button {
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 10px;
+  color: var(--teal);
+  background: rgba(15, 118, 110, 0.1);
+}
+
+.icon-text-button svg,
+.icon-button svg,
+.file-picker svg,
+.primary-button svg {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+}
+
+.icon-button {
+  width: 38px;
+  height: 38px;
+  color: var(--danger);
+  background: rgba(180, 35, 24, 0.08);
+}
+
+.segmented-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.source-option {
+  display: grid;
+  grid-template-columns: 20px 1fr;
+  gap: 10px;
+  width: 100%;
+  min-height: 68px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--foreground);
+  text-align: left;
+}
+
+.source-option strong,
+.source-option small {
+  display: block;
+}
+
+.source-option small {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
+.source-option.selected {
+  border-color: var(--primary);
+  background: rgba(233, 79, 55, 0.08);
+}
+
+.radio-dot {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  border: 2px solid #98a2b3;
+  border-radius: 50%;
+}
+
+.source-option.selected .radio-dot {
+  border: 5px solid var(--primary);
+  background: #ffffff;
+}
+
+.file-input {
+  display: none;
+}
+
+.file-picker {
+  width: 100%;
+  min-height: 58px;
+  margin-top: 12px;
+  gap: 8px;
+  border: 1px dashed var(--sky);
+  color: var(--sky);
+  background: rgba(37, 99, 235, 0.08);
+}
+
+.selected-summary {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 14px;
+  padding: 12px;
+  border-radius: 8px;
+  background: #f1f4f9;
+}
+
+.selected-summary span {
+  color: var(--muted);
+}
+
+.selected-summary strong {
+  font-size: 1.25rem;
+}
+
+.file-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.file-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  padding: 9px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #ffffff;
+  font-size: 0.86rem;
+}
+
+.file-row span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-row small,
+.more-count {
+  color: var(--muted);
+}
+
+.more-count {
+  text-align: center;
+  font-size: 0.86rem;
+}
+
+.error-message {
+  margin-top: 14px;
+  padding: 10px 12px;
+  border: 1px solid rgba(180, 35, 24, 0.22);
+  border-radius: 8px;
+  color: var(--danger);
+  background: rgba(180, 35, 24, 0.08);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.primary-button {
+  width: 100%;
+  min-height: 54px;
+  gap: 8px;
+  padding: 0 18px;
+  color: #ffffff;
+  background: var(--primary);
+}
+
+.primary-button:disabled {
+  cursor: not-allowed;
+  background: #b7becb;
+}
+
+.submit-button {
+  margin-top: 16px;
+}
+
+.spin {
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (min-width: 640px) {
+  .app-shell {
+    padding-bottom: 40px;
+  }
+
+  .hero-band {
+    padding-top: 42px;
+    padding-bottom: 36px;
+  }
+
+  h1 {
+    font-size: 2.3rem;
+  }
+}
