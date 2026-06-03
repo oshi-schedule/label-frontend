@@ -14,6 +14,12 @@ type UploadResponse = {
   chunk_size: number;
 };
 
+type ContributorVerifyResponse = {
+  contributor_id: string;
+  contributor_name: string;
+  role: string;
+};
+
 const TOKEN_STORAGE_KEY = "contributor_token";
 
 const sourceOptions: Array<{ value: SourceType; label: string; note: string }> = [
@@ -37,8 +43,10 @@ export default function LabelUploadPage() {
   const [sourceType, setSourceType] = useState<SourceType>("schedule_document");
   const [file, setFile] = useState<File | null>(null);
   const [contributorToken, setContributorToken] = useState("");
+  const [contributorName, setContributorName] = useState("");
   const [draftToken, setDraftToken] = useState("");
   const [isEditingToken, setIsEditingToken] = useState(false);
+  const [isVerifyingToken, setIsVerifyingToken] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [step, setStep] = useState<UploadStep>("editing");
   const [acceptedCount, setAcceptedCount] = useState(0);
@@ -55,9 +63,49 @@ export default function LabelUploadPage() {
     setContributorToken(token);
     setDraftToken(token);
     setIsEditingToken(!token);
+    if (token) {
+      void verifyAndSetContributor(token, { persist: false });
+    }
   }, []);
 
-  const canUpload = contributorToken.trim().length > 0 && file !== null && !isUploading;
+  const canUpload = contributorToken.trim().length > 0 && contributorName.trim().length > 0 && file !== null && !isUploading && !isVerifyingToken;
+
+  async function verifyAndSetContributor(token: string, options: { persist: boolean }) {
+    setIsVerifyingToken(true);
+    setError(null);
+    try {
+      const response = await fetch(`${resolveApiBaseUrl()}/public/contributor-token/verify`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contributor_token: token })
+      });
+      if (!response.ok) {
+        let detail = "認証キーを確認できませんでした。";
+        try {
+          const body = (await response.json()) as { detail?: unknown };
+          if (typeof body.detail === "string") detail = body.detail;
+        } catch {
+          detail = `認証キーを確認できませんでした。HTTP ${response.status}`;
+        }
+        throw new Error(detail);
+      }
+      const body = (await response.json()) as ContributorVerifyResponse;
+      if (options.persist) {
+        window.localStorage.setItem(TOKEN_STORAGE_KEY, token);
+      }
+      setContributorToken(token);
+      setDraftToken(token);
+      setContributorName(body.contributor_name);
+      setIsEditingToken(false);
+    } catch (verifyError) {
+      window.localStorage.removeItem(TOKEN_STORAGE_KEY);
+      setContributorName("");
+      setIsEditingToken(true);
+      setError(verifyError instanceof Error ? verifyError.message : "認証キーを確認できませんでした。");
+    } finally {
+      setIsVerifyingToken(false);
+    }
+  }
 
   function saveContributorToken() {
     const nextToken = draftToken.trim();
@@ -65,11 +113,7 @@ export default function LabelUploadPage() {
       setError("認証キーを入力してください。");
       return;
     }
-    window.localStorage.setItem(TOKEN_STORAGE_KEY, nextToken);
-    setContributorToken(nextToken);
-    setDraftToken(nextToken);
-    setIsEditingToken(false);
-    setError(null);
+    void verifyAndSetContributor(nextToken, { persist: true });
   }
 
   function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
@@ -179,12 +223,14 @@ export default function LabelUploadPage() {
                   inputMode="text"
                   type="password"
                 />
-                <button className="save-button" type="button" onClick={saveContributorToken}>
-                  保存
+                <button className="save-button" type="button" onClick={saveContributorToken} disabled={isVerifyingToken}>
+                  {isVerifyingToken ? "確認中" : "保存"}
                 </button>
               </div>
             ) : (
-              <p className="contributor-name">保存済み（末尾 {contributorToken.slice(-6)}）</p>
+              <p className="contributor-name">
+                {contributorName ? `${contributorName}（末尾 ${contributorToken.slice(-6)}）` : "確認中"}
+              </p>
             )}
           </section>
 
