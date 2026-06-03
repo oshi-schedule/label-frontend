@@ -18,6 +18,7 @@ type ContributorVerifyResponse = {
   contributor_id: string;
   contributor_name: string;
   role: string;
+  upload_count: number;
 };
 
 const TOKEN_STORAGE_KEY = "contributor_token";
@@ -48,6 +49,7 @@ export default function LabelUploadPage() {
   const [file, setFile] = useState<File | null>(null);
   const [contributorToken, setContributorToken] = useState("");
   const [contributorName, setContributorName] = useState("");
+  const [contributorUploadCount, setContributorUploadCount] = useState(0);
   const [draftToken, setDraftToken] = useState("");
   const [isEditingToken, setIsEditingToken] = useState(false);
   const [isVerifyingToken, setIsVerifyingToken] = useState(false);
@@ -120,6 +122,7 @@ export default function LabelUploadPage() {
           setContributorToken(token);
           setDraftToken(token);
           setContributorName(getBody.contributor_name);
+          setContributorUploadCount(getBody.upload_count);
           setIsEditingToken(false);
           return;
         }
@@ -132,10 +135,12 @@ export default function LabelUploadPage() {
       setContributorToken(token);
       setDraftToken(token);
       setContributorName(body.contributor_name);
+      setContributorUploadCount(body.upload_count);
       setIsEditingToken(false);
     } catch (verifyError) {
       window.localStorage.removeItem(TOKEN_STORAGE_KEY);
       setContributorName("");
+      setContributorUploadCount(0);
       setIsEditingToken(true);
       setError(verifyError instanceof Error ? verifyError.message : "認証キーを確認できませんでした。");
     } finally {
@@ -266,6 +271,7 @@ export default function LabelUploadPage() {
             ) : (
               <p className="contributor-name">
                 {contributorName ? `${contributorName}（末尾 ${contributorToken.slice(-6)}）` : "確認中"}
+                {contributorName ? <span className="contributor-count"> 総アップロード: {contributorUploadCount}件</span> : null}
               </p>
             )}
           </section>
