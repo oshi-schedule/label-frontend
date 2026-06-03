@@ -3,7 +3,7 @@
 import { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react";
 import { CheckCircle2, ImagePlus, Loader2, Pencil, Send, Trash2, UploadCloud } from "lucide-react";
 
-type SourceType = "timetable" | "flyer" | "meet_and_greet" | "x_screenshot";
+type SourceType = "schedule_document" | "flyer" | "x_post" | "other";
 type UploadStep = "editing" | "done";
 
 type UploadResponse = {
@@ -18,10 +18,10 @@ const CONTRIBUTOR_STORAGE_KEY = "contributor_name";
 const TOKEN_STORAGE_KEY = "contributor_token";
 
 const sourceOptions: Array<{ value: SourceType; label: string; note: string }> = [
-  { value: "timetable", label: "タイテ", note: "出演時間やステージ表" },
+  { value: "schedule_document", label: "タイムテーブル", note: "出演・特典会・物販などの時間表" },
   { value: "flyer", label: "告知画像", note: "イベント概要や出演者一覧" },
-  { value: "meet_and_greet", label: "特典会タイテ", note: "特典会や並行物販の時間表" },
-  { value: "x_screenshot", label: "X投稿のスクショ", note: "Xの投稿画面を撮影した画像" },
+  { value: "x_post", label: "X投稿のスクショ", note: "Xの投稿画面を撮影した画像" },
+  { value: "other", label: "その他", note: "上のどれにも当てはまらない画像" },
 ];
 
 function resolveApiBaseUrl() {
@@ -35,7 +35,7 @@ function resolveApiBaseUrl() {
 
 export default function LabelUploadPage() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const [sourceType, setSourceType] = useState<SourceType>("timetable");
+  const [sourceType, setSourceType] = useState<SourceType>("schedule_document");
   const [file, setFile] = useState<File | null>(null);
   const [contributorName, setContributorName] = useState("");
   const [draftName, setDraftName] = useState("");
@@ -137,7 +137,7 @@ export default function LabelUploadPage() {
         <div className="hero-inner">
           <p className="eyebrow">Event Candidate Labeling</p>
           <h1>画像アップロード</h1>
-          <p className="lead">タイテ、フライヤー、特典会、Xのスクショを1枚ずつ送れます。</p>
+          <p className="lead">タイムテーブル、告知画像、Xのスクショなどを1枚ずつ送れます。</p>
         </div>
       </section>
 
