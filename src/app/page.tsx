@@ -14,7 +14,6 @@ type UploadResponse = {
   chunk_size: number;
 };
 
-const CONTRIBUTOR_STORAGE_KEY = "contributor_name";
 const TOKEN_STORAGE_KEY = "contributor_token";
 
 const sourceOptions: Array<{ value: SourceType; label: string; note: string }> = [
@@ -37,38 +36,39 @@ export default function LabelUploadPage() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [sourceType, setSourceType] = useState<SourceType>("schedule_document");
   const [file, setFile] = useState<File | null>(null);
-  const [contributorName, setContributorName] = useState("");
-  const [draftName, setDraftName] = useState("");
-  const [isEditingName, setIsEditingName] = useState(false);
+  const [contributorToken, setContributorToken] = useState("");
+  const [draftToken, setDraftToken] = useState("");
+  const [isEditingToken, setIsEditingToken] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [step, setStep] = useState<UploadStep>("editing");
   const [acceptedCount, setAcceptedCount] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const storedName = window.localStorage.getItem(CONTRIBUTOR_STORAGE_KEY) ?? "";
     const params = new URLSearchParams(window.location.search);
-    const token = params.get("token");
-    if (token) {
-      window.localStorage.setItem(TOKEN_STORAGE_KEY, token);
+    const queryToken = params.get("token")?.trim();
+    const storedToken = window.localStorage.getItem(TOKEN_STORAGE_KEY)?.trim() ?? "";
+    const token = queryToken || storedToken;
+    if (queryToken) {
+      window.localStorage.setItem(TOKEN_STORAGE_KEY, queryToken);
     }
-    setContributorName(storedName);
-    setDraftName(storedName);
-    setIsEditingName(!storedName);
+    setContributorToken(token);
+    setDraftToken(token);
+    setIsEditingToken(!token);
   }, []);
 
-  const canUpload = contributorName.trim().length > 0 && file !== null && !isUploading;
+  const canUpload = contributorToken.trim().length > 0 && file !== null && !isUploading;
 
-  function saveContributorName() {
-    const nextName = draftName.trim();
-    if (!nextName) {
-      setError("ニックネームを入力してください。");
+  function saveContributorToken() {
+    const nextToken = draftToken.trim();
+    if (!nextToken) {
+      setError("認証キーを入力してください。");
       return;
     }
-    window.localStorage.setItem(CONTRIBUTOR_STORAGE_KEY, nextName);
-    setContributorName(nextName);
-    setDraftName(nextName);
-    setIsEditingName(false);
+    window.localStorage.setItem(TOKEN_STORAGE_KEY, nextToken);
+    setContributorToken(nextToken);
+    setDraftToken(nextToken);
+    setIsEditingToken(false);
     setError(null);
   }
 
@@ -88,12 +88,8 @@ export default function LabelUploadPage() {
 
     try {
       const formData = new FormData();
-      formData.set("contributor_name", contributorName.trim());
       formData.set("source_type_hint", sourceType);
-      const token = window.localStorage.getItem(TOKEN_STORAGE_KEY);
-      if (token) {
-        formData.set("contributor_token", token);
-      }
+      formData.set("contributor_token", contributorToken.trim());
       if (file) {
         formData.append("images", file);
       }
@@ -156,14 +152,14 @@ export default function LabelUploadPage() {
         <form className="upload-panel" onSubmit={handleSubmit}>
           <section className="form-section contributor-section">
             <div className="section-title-row">
-              <h2>投稿者</h2>
-              {!isEditingName && (
+              <h2>認証キー</h2>
+              {!isEditingToken && (
                 <button
                   className="icon-text-button"
                   type="button"
                   onClick={() => {
-                    setDraftName(contributorName);
-                    setIsEditingName(true);
+                    setDraftToken(contributorToken);
+                    setIsEditingToken(true);
                   }}
                 >
                   <Pencil aria-hidden="true" />
@@ -172,21 +168,23 @@ export default function LabelUploadPage() {
               )}
             </div>
 
-            {isEditingName ? (
+            {isEditingToken ? (
               <div className="name-editor">
                 <input
-                  value={draftName}
-                  onChange={(event) => setDraftName(event.target.value)}
-                  placeholder="ニックネーム"
-                  maxLength={80}
-                  autoComplete="nickname"
+                  value={draftToken}
+                  onChange={(event) => setDraftToken(event.target.value)}
+                  placeholder="認証キー"
+                  maxLength={200}
+                  autoComplete="off"
+                  inputMode="text"
+                  type="password"
                 />
-                <button className="save-button" type="button" onClick={saveContributorName}>
+                <button className="save-button" type="button" onClick={saveContributorToken}>
                   保存
                 </button>
               </div>
             ) : (
-              <p className="contributor-name">{contributorName}</p>
+              <p className="contributor-name">保存済み（末尾 {contributorToken.slice(-6)}）</p>
             )}
           </section>
 
