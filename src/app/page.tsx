@@ -29,6 +29,10 @@ const sourceOptions: Array<{ value: SourceType; label: string; note: string }> =
   { value: "other", label: "その他", note: "上のどれにも当てはまらない画像" },
 ];
 
+function normalizeContributorToken(value: string): string {
+  return value.replace(/\s+/g, "").trim();
+}
+
 function resolveApiBaseUrl() {
   const configured = process.env.NEXT_PUBLIC_API_BASE_URL;
   if (configured) return configured.replace(/\/$/, "");
@@ -54,8 +58,8 @@ export default function LabelUploadPage() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const queryToken = params.get("token")?.trim();
-    const storedToken = window.localStorage.getItem(TOKEN_STORAGE_KEY)?.trim() ?? "";
+    const queryToken = normalizeContributorToken(params.get("token") ?? "");
+    const storedToken = normalizeContributorToken(window.localStorage.getItem(TOKEN_STORAGE_KEY) ?? "");
     const token = queryToken || storedToken;
     if (queryToken) {
       window.localStorage.setItem(TOKEN_STORAGE_KEY, queryToken);
@@ -70,7 +74,12 @@ export default function LabelUploadPage() {
 
   const canUpload = contributorToken.trim().length > 0 && contributorName.trim().length > 0 && file !== null && !isUploading && !isVerifyingToken;
 
-  async function verifyAndSetContributor(token: string, options: { persist: boolean }) {
+  async function verifyAndSetContributor(rawToken: string, options: { persist: boolean }) {
+    const token = normalizeContributorToken(rawToken);
+    if (!token) {
+      setError("認証キーを入力してください。");
+      return;
+    }
     setIsVerifyingToken(true);
     setError(null);
     try {
@@ -86,6 +95,33 @@ export default function LabelUploadPage() {
           if (typeof body.detail === "string") detail = body.detail;
         } catch {
           detail = `認証キーを確認できませんでした。HTTP ${response.status}`;
+        }
+        if (response.status === 404) {
+          const getResponse = await fetch(
+            `${resolveApiBaseUrl()}/public/contributor-token/verify?contributor_token=${encodeURIComponent(token)}`,
+            {
+              method: "GET",
+              headers: { Accept: "application/json" },
+            }
+          );
+          if (!getResponse.ok) {
+            try {
+              const getBody = (await getResponse.json()) as { detail?: unknown };
+              if (typeof getBody.detail === "string") detail = getBody.detail;
+            } catch {
+              detail = `認証キーを確認できませんでした。HTTP ${getResponse.status}`;
+            }
+            throw new Error(detail);
+          }
+          const getBody = (await getResponse.json()) as ContributorVerifyResponse;
+          if (options.persist) {
+            window.localStorage.setItem(TOKEN_STORAGE_KEY, token);
+          }
+          setContributorToken(token);
+          setDraftToken(token);
+          setContributorName(getBody.contributor_name);
+          setIsEditingToken(false);
+          return;
         }
         throw new Error(detail);
       }
@@ -108,7 +144,7 @@ export default function LabelUploadPage() {
   }
 
   function saveContributorToken() {
-    const nextToken = draftToken.trim();
+    const nextToken = normalizeContributorToken(draftToken);
     if (!nextToken) {
       setError("認証キーを入力してください。");
       return;
