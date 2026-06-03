@@ -57,6 +57,7 @@ export default function LabelUploadPage() {
   const [step, setStep] = useState<UploadStep>("editing");
   const [acceptedCount, setAcceptedCount] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [filePreviewUrl, setFilePreviewUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -73,6 +74,18 @@ export default function LabelUploadPage() {
       void verifyAndSetContributor(token, { persist: false });
     }
   }, []);
+
+  useEffect(() => {
+    if (!file) {
+      setFilePreviewUrl(null);
+      return;
+    }
+    const nextUrl = URL.createObjectURL(file);
+    setFilePreviewUrl(nextUrl);
+    return () => {
+      URL.revokeObjectURL(nextUrl);
+    };
+  }, [file]);
 
   const canUpload = contributorToken.trim().length > 0 && contributorName.trim().length > 0 && file !== null && !isUploading && !isVerifyingToken;
 
@@ -328,6 +341,11 @@ export default function LabelUploadPage() {
 
             {file && (
               <div className="file-list" aria-label="選択中の画像">
+                {filePreviewUrl ? (
+                  <div className="preview-card">
+                    <img src={filePreviewUrl} alt={`preview ${file?.name ?? "selected"}`} className="preview-image" />
+                  </div>
+                ) : null}
                 <div className="file-row">
                   <span>{file.name}</span>
                   <small>{Math.max(1, Math.round(file.size / 1024))}KB</small>

@@ -306,6 +306,20 @@ h1 {
   margin-top: 12px;
 }
 
+.preview-card {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.preview-image {
+  width: 100%;
+  max-height: 360px;
+  object-fit: contain;
+  display: block;
+}
+
 .file-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
