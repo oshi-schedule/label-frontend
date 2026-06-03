@@ -290,28 +290,6 @@ export default function LabelUploadPage() {
           </section>
 
           <section className="form-section">
-            <h2>種別選択</h2>
-            <div className="segmented-list" role="radiogroup" aria-label="画像種別">
-              {sourceOptions.map((option) => (
-                <button
-                  className={`source-option ${sourceType === option.value ? "selected" : ""}`}
-                  key={option.value}
-                  type="button"
-                  role="radio"
-                  aria-checked={sourceType === option.value}
-                  onClick={() => setSourceType(option.value)}
-                >
-                  <span className="radio-dot" aria-hidden="true" />
-                  <span>
-                    <strong>{option.label}</strong>
-                    <small>{option.note}</small>
-                  </span>
-                </button>
-              ))}
-            </div>
-          </section>
-
-          <section className="form-section">
             <div className="section-title-row">
               <h2>画像追加</h2>
               {file && (
@@ -352,6 +330,28 @@ export default function LabelUploadPage() {
                 </div>
               </div>
             )}
+          </section>
+
+          <section className="form-section">
+            <h2>種別選択</h2>
+            <div className="segmented-list" role="radiogroup" aria-label="画像種別">
+              {sourceOptions.map((option) => (
+                <button
+                  className={`source-option ${sourceType === option.value ? "selected" : ""}`}
+                  key={option.value}
+                  type="button"
+                  role="radio"
+                  aria-checked={sourceType === option.value}
+                  onClick={() => setSourceType(option.value)}
+                >
+                  <span className="radio-dot" aria-hidden="true" />
+                  <span>
+                    <strong>{option.label}</strong>
+                    <small>{option.note}</small>
+                  </span>
+                </button>
+              ))}
+            </div>
           </section>
 
           {error && <p className="error-message">{error}</p>}
